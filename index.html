@@ -2,20 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>SWM WhiteBoard Project Sandbox</title>
-  <link rel="stylesheet" href="style.css">
+  <title>소마 화이트보드 프로젝트 샌드박스</title>
+  <link rel="stylesheet" href="index.css">
   <script src="https://cdn.jsdelivr.net/npm/short-unique-id@latest/dist/short-unique-id.min.js"></script>
 </head>
 <body>
   <div>
-    <h1>SWM WhiteBoard Project Sandbox using Yorkie</h1>
-    <canvas width="1000px" height="700px" id="drawing-panel" style='border: 1px solid black;'></canvas>
+    <h1>소마 화이트보드 프로젝트 샌드박스</h1>
+    <p>Yorkie를 활용한 실시간 협업 화이트보드 테스트 그라운드</p>
+    <canvas width="1000px" height="700px" id="drawing-panel"></canvas>
     <div class="options">
-      <button id="clearButton">Clear Canvas</button>
+      <button id="clear-button" class="button">초기화</button>
+      <button id="brush-button" class="button">브러쉬</button>
+      <button id="eraser-button" class="button" disabled>지우개</button>
+      <input id="brush-size-range" type="range" min="1" max="10" step="1"/>
     </div>
     <div class="status">
-      <div>Status: <span id="network-status"></span></div>
-      <div>Peers:</div>
+      <div><p style="display: inline">네트워크 상태: </p><span id="network-status"></span></div>
+      <div><p>현재 접속한 사람들:</p></div>
       <pre style="white-space: pre-wrap;"><code id="peers-holder"></code></pre>
       <div style="display: none">document:</div>
       <pre style="white-space: pre-wrap;"><code id="log-holder"></code></pre>
@@ -23,150 +27,6 @@
   </div>
   <script src="./yorkie-js-sdk.js"></script>
   <script src="./util.js"></script>
-  <script>
-    const shortUniqueID = new ShortUniqueId();
-    const statusHolder = document.getElementById('network-status');
-    const drawingPanel = document.getElementById('drawing-panel');
-    const placeholder = document.getElementById('placeholder');
-    const logHolder = document.getElementById('log-holder');
-    const peersHolder = document.getElementById('peers-holder');
-    const clearButton = document.getElementById('clearButton');
-    
-    function paintCanvas(shapes) {
-      // TODO Now repainting the whole thing. Only changed parts should be drawn.
-      const context = drawingPanel.getContext('2d');
-      context.clearRect(0, 0, drawingPanel.width, drawingPanel.height);
-
-      context.lineWidth = 10;
-
-      for (const shape of shapes) {
-        context.beginPath();
-        let isMoved = false; 
-        for (const p of shape.points) {
-          if (isMoved === false) {
-            isMoved = true; 
-            context.moveTo(p.x, p.y);
-          } else {
-            context.lineTo(p.x, p.y);
-          }
-        }
-
-        context.stroke();
-      }
-    }
-
-    function getPoint(e) {
-      return {
-        x: e.clientX - (drawingPanel.offsetLeft) + window.scrollX,
-        y: e.clientY - (drawingPanel.offsetTop) + window.scrollY
-      };
-    }
-
-    function displayPeers(peers, username) {
-      const usernames = [];
-
-      for (const [_, peer] of Object.entries(peers)) {
-        usernames.push(peer['username']);
-      }
-
-      peersHolder.innerHTML = JSON.stringify(usernames).replace(username, `<b>${username}</b>`);
-    }
-
-    async function main() {
-      let peers;
-      const metadata = {username: `username-${shortUniqueID()}`};
-
-      try {
-        // 01. create client with RPCAddr(envoy) then activate it.
-        const client = yorkie.createClient('http://121.130.91.176:8080', {
-          metadata,
-          syncLoopDuration: 0,
-          reconnectStreamDelay: 1000
-        });
-        client.subscribe(network.statusListener(statusHolder));
-        await client.activate();
-
-        client.subscribe((event) => {
-          if (event.type === 'peers-changed') {
-            peers = event.value[doc.getKey()];
-            displayPeers(peers, metadata['username']);
-          }
-        });
-
-        // 02. create a document then attach it into the client.
-        const doc = yorkie.createDocument('drawing-panel', 'drawing-1');
-        await client.attach(doc);
-
-        doc.update((root) => {
-          if (!root['shapes']) {
-            root['shapes'] = [];
-          }
-        }, 'create points if not exists');
-
-        doc.subscribe((event) => {
-          paintCanvas(doc.getRoot().shapes);
-        });
-        await client.sync();
-
-        document.addEventListener('mousedown', (e) => {
-          if (!window.isMouseDown) {
-            window.isMouseDown = true; 
-            const point = getPoint(e);
-            if (point.x < 0 || point.y < 0 ||
-                point.x > drawingPanel.width || point.y > drawingPanel.height) {
-              return;
-            }
-
-            doc.update((root) => {
-              root.shapes.push({
-                points: [point]
-              });
-              const shape = root.shapes.getLast();
-              window.currentID = shape.getID();
-            }, `update content by ${client.getID()}`);
-          }
-        });
-
-        document.addEventListener('mousemove', (e) => {
-          if (window.isMouseDown) {
-            const point = getPoint(e);
-            if (point.x < 0 || point.y < 0 ||
-                point.x > drawingPanel.width || point.y > drawingPanel.height) {
-              return;
-            }
-
-            doc.update((root) => {
-              const shape = root.shapes.getElementByID(window.currentID);
-              shape.points.push(point);
-              paintCanvas(root.shapes);
-            }, `update content by ${client.getID()}`);
-          }
-        });
-
-        document.addEventListener('mouseup', (e) => {
-          if (window.isMouseDown) {
-            window.isMouseDown = false;   
-          }
-        });
-
-        clearButton.addEventListener('click', () => {
-          const context = drawingPanel.getContext('2d');
-          context.clearRect(0, 0, drawingPanel.width, drawingPanel.height);
-          context.beginPath();
-
-          doc.update((root) => {
-            root['shapes'] = [];
-        }, `clear content by ${client.getID()}`);
-        });
-
-        // 05. set initial value.
-        paintCanvas(doc.getRoot().shapes);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    main();
-  </script>
+  <script src="./index.js"></script>
 </body>
 </html>

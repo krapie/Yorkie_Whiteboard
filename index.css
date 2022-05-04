@@ -1,0 +1,32 @@
+#network-status span {
+  display: inline-block;
+  height: 0.8rem;
+  width: 0.8rem;
+  border-radius: 0.4rem;
+}
+.green { background-color: green }
+.red { background-color: red; }
+
+canvas {
+  background-color: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0px 0px 3px rgba(0, 0, 0, 0.5);
+}
+
+.button {
+  background-color: white;
+  padding: 5px 10px;
+  text-align: center;
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  color: rgba(0, 0, 0, 0.7);
+}
+
+#brush-button {
+  background-color: skyblue;
+}
+
+.status {
+  margin-top: 15px;
+}
