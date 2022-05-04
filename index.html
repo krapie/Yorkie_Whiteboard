@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Drawing Example</title>
+  <title>SWM WhiteBoard Project Test</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div>
-    <div>status: <span id="network-status"></span></div>
-    <canvas width="500px" height="500px" id="drawing-panel" style='border: 1px solid black;'></canvas>
-    <div>document:</div>
+    <div>Status: <span id="network-status"></span></div>
+    <canvas width="1000px" height="1000px" id="drawing-panel" style='border: 1px solid black;'></canvas>
+    <div style="display: none">document:</div>
     <pre style="white-space: pre-wrap;"><code id="log-holder"></code></pre>
     <button id="clearButton">Clear Canvas</button>
   </div>
@@ -25,7 +25,9 @@
     function paintCanvas(shapes) {
       // TODO Now repainting the whole thing. Only changed parts should be drawn.
       const context = drawingPanel.getContext('2d');
-      context.clearRect(0, 0, 500, 500);
+      context.clearRect(0, 0, drawingPanel.width, drawingPanel.height);
+
+      context.lineWidth = 10;
 
       for (const shape of shapes) {
         context.beginPath();
@@ -80,7 +82,7 @@
             window.isMouseDown = true; 
             const point = getPoint(e);
             if (point.x < 0 || point.y < 0 ||
-                point.x > 500 || point.y > 500) {
+                point.x > drawingPanel.width || point.y > drawingPanel.height) {
               return;
             }
 
@@ -98,7 +100,7 @@
           if (window.isMouseDown) {
             const point = getPoint(e);
             if (point.x < 0 || point.y < 0 ||
-                point.x > 500 || point.y > 500) {
+                point.x > drawingPanel.width || point.y > drawingPanel.height) {
               return;
             }
 
@@ -118,7 +120,7 @@
 
         clearButton.addEventListener('click', () => {
           const context = drawingPanel.getContext('2d');
-          context.clearRect(0, 0, 500, 500);
+          context.clearRect(0, 0, drawingPanel.width, drawingPanel.height);
           context.beginPath();
 
           doc.update((root) => {
