@@ -2,22 +2,23 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>SWM WhiteBoard Project Test</title>
+  <title>SWM WhiteBoard Project Sandbox</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/short-unique-id@latest/dist/short-unique-id.min.js"></script>
 </head>
 <body>
   <div>
-    <div>Status: <span id="network-status"></span></div>
-    <canvas width="1000px" height="1000px" id="drawing-panel" style='border: 1px solid black;'></canvas>
+    <h1>SWM WhiteBoard Project Sandbox using Yorkie</h1>
+    <canvas width="1000px" height="700px" id="drawing-panel" style='border: 1px solid black;'></canvas>
     <div class="options">
       <button id="clearButton">Clear Canvas</button>
     </div>
     <div class="status">
-      <div style="display: none">document:</div>
-      <pre style="white-space: pre-wrap;"><code id="log-holder"></code></pre>
+      <div>Status: <span id="network-status"></span></div>
       <div>Peers:</div>
       <pre style="white-space: pre-wrap;"><code id="peers-holder"></code></pre>
+      <div style="display: none">document:</div>
+      <pre style="white-space: pre-wrap;"><code id="log-holder"></code></pre>
     </div>
   </div>
   <script src="./yorkie-js-sdk.js"></script>
