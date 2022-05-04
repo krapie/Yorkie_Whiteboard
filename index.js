@@ -179,9 +179,15 @@ async function main() {
     }
 
     // 04. add event handlers
-    document.addEventListener('mousedown', downEvent);
-    document.addEventListener('mousemove', moveEvent);
-    document.addEventListener('mouseup', upEvent);
+    // for desktop
+    drawingPanel.addEventListener('mousedown', downEvent);
+    drawingPanel.addEventListener('mousemove', moveEvent);
+    drawingPanel.addEventListener('mouseup', upEvent);
+    
+    // for mobile
+    drawingPanel.addEventListener('touchstart', (e) => { e.preventDefault(); downEvent(e.touches[0]);}, false);
+    drawingPanel.addEventListener('touchmove', (e) => { e.preventDefault(); moveEvent(e.touches[0]);}, false);
+    drawingPanel.addEventListener('touchend', (e) => { e.preventDefault(); upEvent(e.touches[0]);}, false);
 
     clearButton.addEventListener('click', () => {
         context.clearRect(0, 0, drawingPanel.width, drawingPanel.height);
